@@ -17,7 +17,7 @@ The repo consists of:
 1. API Gateway Custom Authorizer using Credstash
 
 In this project,
-* `dweezil` is used as the example application and package name
+* `moonunit` is used as the example application and package name
 * `rcollimore` is used as the example username
 
 Most of the configuration for deploying to AWS is generated from templates to allow multiple developers to deploy to
@@ -71,7 +71,7 @@ All of these commands need to be run in the context of `pipenv shell` or execute
 ### Run the web service locally with Gunicorn
 
 ```
-QUEUE_NAME=Dweezil-InboundResponses-dev-$USER gunicorn dweezil.webhook_handler:app
+QUEUE_NAME=Moonunit-InboundResponses-dev-$USER gunicorn moonunit.webhook_handler:app
 ```
 
 ### Initially deploy environment 'dev' to AWS
@@ -107,7 +107,7 @@ curl -v -X POST 'https://webhook.example.org/responses?answer=foo' -H 'Authoriza
 
 Creating a new Custom Domain Name:
 * API Gateway -> Custom Domain Names -> (Create Custom Domain Name)
-* Domain Name: e.g., dweezil-dev-rcollimore.example.org
+* Domain Name: e.g., moonunit-dev-rcollimore.example.org
 * Edge Optimized (as the certificate lives in us-east-1, it has to be)
 * ACM Certificate: *.example.org, the only one
 * Base Path Mappings
@@ -119,7 +119,7 @@ Then wait for ~40 minutes (not joke) -- it takes that long for all the things to
 
 Create a Route53 A record to your custom domain
 * Edit Hosted Zone '.example.org'
-* Name: dweezil-dev-rcollimore
+* Name: moonunit-dev-rcollimore
 * Type: A
 * Alias: Yes
   * Alias Target: CloudFront host, e.g., dwdl1utqpi3k6.cloudfront.net. from your Custom Domain Name

@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-// pipeline for Dweezil webhook handler
+// pipeline for Moonunit API Endpoint Handler
 
 pipeline {
 
