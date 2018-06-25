@@ -48,31 +48,31 @@ def tests(ctx, marker=None, open=False, stdout=False):
 
 @task
 def create(ctx, env):
-    create_aux_stack(ctx, env, resource_suffix(env))
-    zappa(ctx, 'deploy', env, resource_suffix(env))
+    stack = create_aux_stack(ctx, env, resource_suffix(env))
+    zappa(ctx, 'deploy', env, resource_suffix(env), stack)
     certify(ctx, env)
 
 
 @task
 def certify(ctx, env):
-    zappa(ctx, 'certify', env, resource_suffix(env))
+    zappa(ctx, 'certify', env, resource_suffix(env), {})
 
 
 @task
 def delete(ctx, env):
     delete_queues_stack(ctx, resource_suffix(env))
-    zappa(ctx, 'undeploy', env, resource_suffix(env))
+    zappa(ctx, 'undeploy', env, resource_suffix(env), {})
 
 
 @task
 def update(ctx, env):
-    create_aux_stack(ctx, env, resource_suffix(env))
-    zappa(ctx, 'update', env, resource_suffix(env))
+    stack = create_aux_stack(ctx, env, resource_suffix(env))
+    zappa(ctx, 'update', env, resource_suffix(env), stack)
 
 
 @task
 def tail(ctx, env):
-    zappa(ctx, 'tail', env, resource_suffix(env))
+    zappa(ctx, 'tail', env, resource_suffix(env), {})
 
 
 @task
@@ -80,10 +80,10 @@ def create_aux_stack(_ctx, env, resource_suffix):
     region = config[env][REGION]
     return create_or_update_aux(
         region=region,
-        stack_name=f'moonunit-aux-{resource_suffix}',
+        stack_name=f'{STACK_NAME_PREFIX}-{resource_suffix}',
         source_bucket_resource_name='SourceBucket',
         source_bucket_name=make_bucket_name(region, 'source', resource_suffix),
-        assets_bucket_resource_name='AssetBucket',
+        assets_bucket_resource_name='AssetsBucket',
         assets_bucket_name=make_bucket_name(region, 'assets', resource_suffix)
     )
 
@@ -93,46 +93,57 @@ def delete_queues_stack(_ctx, env):
     pass
 
 
-@task
-def build_attach_policy(ctx, env, resource_suffix):
+def build_attach_policy(ctx, env, stack):
     region = config[env][REGION]
     acct_id = config[env][ACCT_ID]
-    output_filename = 'tmp/attach_policy.json'
+    stack_name = stack['Stacks'][0]['StackName']
 
-    with open(output_filename, 'wt') as f:
+    with open('tmp/attach_policy.json', 'wt') as f:
         f.write(
             attach_policy_json(
                 region=region,
                 acct_id=acct_id,
-                bucket_names=[
-                    make_bucket_name(region, 'source', resource_suffix),
-                    make_bucket_name(region, 'assets', resource_suffix)
+                bucket_arns=[
+                    find_output(stack, stack_name, 'SourceBucketArn'),
+                    find_output(stack, stack_name, 'AssetsBucketArn'),
                 ]
             )
         )
+        print(f"Wrote {f.name}")
 
-    print(f"Wrote {output_filename}")
+
+def find_output(stacks, stack_name, k):
+    return next((e for e in next(
+        s for s in stacks['Stacks'] if s['StackName'] == stack_name)['Outputs']
+                 if e['OutputKey'] == k), None)['OutputValue']
 
 
 @task
 def build_zappa_settings(ctx, env, resource_suffix, username):
     output_filename = 'tmp/zappa_settings.yaml'
+    region = config[env][REGION]
 
     with open(output_filename, 'wt') as f:
         f.write(
             generate_zappa_settings(
                 template='settings/zappa_settings_template.yaml',
-                resource_suffix=resource_suffix,
-                region=config[env][REGION],
-                username=username
+                region=region,
+                username=username,
+                stack_name=f'{STACK_NAME_PREFIX}-{resource_suffix}',
+                source_bucket_name=make_bucket_name(region, 'source',
+                                                    resource_suffix),
+                assets_bucket_name=make_bucket_name(region, 'assets',
+                                                    resource_suffix)
             )
         )
 
     print(f"Wrote {output_filename}")
 
 
-def zappa(ctx, cmd, env, resource_suffix):
-    build_attach_policy(ctx, env, resource_suffix)
+def zappa(ctx, cmd, env, resource_suffix, stack):
+    if cmd in ['deploy', 'update']:
+        build_attach_policy(ctx, env, stack)
+
     build_zappa_settings(ctx, env, resource_suffix, user())
     stage = f'dev_{user()}' if env == 'dev' else env
     zappa_cmd = f"zappa {cmd} {stage} -s tmp/zappa_settings.yaml"

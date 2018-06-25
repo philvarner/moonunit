@@ -1,14 +1,9 @@
-# Inputs
-# region
-# queue_name_prefix, e.g., Moonunit-InboundResponses
-# username, e.g., rcollimore (only used for dev deploy)
-# resource_suffix, e.g., dev-rcollimore, sandbox
-
 base_stage:
-  project_name: Moonunit-Webhook
+  project_name: Moonunit8
   aws_environment_variables:
     STACK_NAME: {stack_name}
-    BUCKET_NAME: {bucket_name}
+    SOURCE_BUCKET_NAME: {source_bucket_name}
+    ASSETS_BUCKET_NAME: {assets_bucket_name}
   debug: true
   log_level: DEBUG
   apigateway_description: Moonunit API Endpoint to write files to S3
@@ -24,16 +19,12 @@ base_stage:
   events:
   - function: moonunit.s3_put_handler
     event_source:
-      arn:  arn:aws:s3:::moonunitllc-source-test-us-east-2 # TODO
+      arn: arn:aws:s3:::{source_bucket_name}
       events:
-        - s3:ObjectCreated:*
+      - s3:ObjectCreated:*
 
 dev_{username}:
   extends: base_stage
-  domain: moonunit-webhook-{resource_suffix}.doorwall.haus
-
-  # cert is only in us-east-1, so hardcoded. cert is on *.example.org, so shared
-  certificate_arn: arn:aws:acm:us-east-1:XXXXXXXXXXXXXX:certificate/XXXX-XXXX-XXXX-XXXX
 
 sandbox:
   extends: base_stage

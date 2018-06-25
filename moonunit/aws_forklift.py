@@ -41,7 +41,7 @@ def define_s3_bucket(*, t, resource_name, bucket_name):
     s3bucket = t.add_resource(Bucket(resource_name, BucketName=bucket_name))
     t.add_output([
         Output(
-            'BucketArn',
+            f'{resource_name}Arn',
             Description=f'ARN of {bucket_name} Bucket',
             Value=GetAtt(resource_name, 'Arn'),
             Export=Export(Name(Sub(f'${{AWS::StackName}}:{resource_name}Arn')))
