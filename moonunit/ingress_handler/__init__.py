@@ -25,9 +25,9 @@ class ImageResource:
         logger.info('Lambda function invoked')
 
         region_name = os.environ.get('AWS_REGION')
-        bucket_name = os.getenv('BUCKET_NAME')
+        bucket_name = os.getenv('SOURCE_BUCKET_NAME')
         key = ''.join(choices(ascii_uppercase, k=10))
-        body = req.content
+        body = req.stream.read()
 
         try:
             response = client('s3', region_name=region_name).put_object(
@@ -45,4 +45,4 @@ class ImageResource:
 
 
 app = falcon.API()
-app.add_route('/image', ImageResource())
+app.add_route('/images', ImageResource())
