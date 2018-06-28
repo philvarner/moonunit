@@ -161,4 +161,4 @@ def resource_suffix(env):
 
 
 def make_bucket_name(region, purpose, suffix):
-    return f'moonunitllc-{region}-{BUCKET_NAME_PREFIX}-{purpose}-{suffix}'
+    return f'moonunitco-{BUCKET_NAME_PREFIX}-{purpose}-{suffix}'

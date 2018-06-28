@@ -19,7 +19,7 @@ def generate_cf_template(*,
                          source_bucket_resource_name, source_bucket_name,
                          assets_bucket_resource_name, assets_bucket_name):
     t = Template(
-        Description='A template for creating Bifrost Ingress resources'
+        Description='A template for creating Moon Unit resources'
     )
     t.version = '2010-09-09'
 

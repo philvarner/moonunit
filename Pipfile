@@ -1,11 +1,8 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 
-
 [packages]
-
 requests = "*"
 timeout-decorator = "*"
 zappa = "*"
@@ -15,10 +12,10 @@ troposphere = "*"
 awacs = "*"
 invoke = "*"
 cfn-flip = "*"
-
+pillow = "*"
+falcon-multipart = "*"
 
 [dev-packages]
-
 pytest = "*"
 pycodestyle = "*"
 requests-mock = "*"
@@ -28,7 +25,5 @@ coverage = "*"
 pytest-cov = "*"
 moto = "*"
 
-
 [requires]
-
 python_version = "3.6"

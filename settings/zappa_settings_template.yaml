@@ -1,5 +1,5 @@
 base_stage:
-  project_name: Moonunit8
+  project_name: moonunit
   aws_environment_variables:
     STACK_NAME: {stack_name}
     SOURCE_BUCKET_NAME: {source_bucket_name}
@@ -10,14 +10,13 @@ base_stage:
   lambda_description: Moonunit lambda handler
   app_function: moonunit.ingress_handler.app
   aws_region: {region}
-  profile_name: default
   runtime: python3.6
-  s3_bucket: moonunitllc-{region}-zappa-staging
+  s3_bucket: moonunitco-zappa-stage
   timeout_seconds: 15
   memory_size: 128
   attach_policy: tmp/attach_policy.json
   events:
-  - function: moonunit.s3_put_handler
+  - function: moonunit.rotate_image
     event_source:
       arn: arn:aws:s3:::{source_bucket_name}
       events:
